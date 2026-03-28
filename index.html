@@ -139,6 +139,7 @@ ul.task-list li input[type="checkbox"] {
 
 
 <p>Los siguientes dashboards se realizarón gracias a la iniciativa de Datos Abiertos de la Fiscalia en el Ecosistema Roma para ver la fuente oficial ve al siguiente enlace <a href="https://portales.mp.gob.bo">portales.mp.gob.bo</a></p>
+<p>Dashboards - <a href="./data/violencia-domestica-2025/">Violencia Domestica</a> - <a href="./data/delitos-por-robo-2025/">Delitos de Robo</a></p>
 
 
 
@@ -216,7 +217,7 @@ ul.task-list li input[type="checkbox"] {
     }
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
       var mailtoRegex = new RegExp(/^mailto:/);
-        var filterRegex = new RegExp('/' + window.location.host + '/');
+        var filterRegex = new RegExp("https:\/\/andres-chirinos\.github\.io\/portales\.mp\.gob\.bo\/");
       var isInternal = (href) => {
           return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
       }
