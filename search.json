@@ -4,7 +4,14 @@
     "href": "index.html",
     "title": "Información de Datos Abiertos de la Fiscalia",
     "section": "",
-    "text": "Los siguientes dashboards se realizarón gracias a la iniciativa de Datos Abiertos de la Fiscalia en el Ecosistema Roma para ver la fuente oficial ve al siguiente enlace portales.mp.gob.bo\nDashboards - Violencia Domestica - Delitos de Robo"
+    "text": "Los siguientes dashboards se realizarón gracias a la iniciativa de Datos Abiertos de la Fiscalia en el Ecosistema Roma para ver la fuente oficial ve al siguiente enlace portales.mp.gob.bo"
+  },
+  {
+    "objectID": "index.html#dashboards",
+    "href": "index.html#dashboards",
+    "title": "Información de Datos Abiertos de la Fiscalia",
+    "section": "Dashboards",
+    "text": "Dashboards\n\nViolencia Domestica\nDelitos de Robo"
   },
   {
     "objectID": "scripts/extract_datasets.html",
