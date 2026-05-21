@@ -1,0 +1,268 @@
+{
+  "name": "delitos-en-ambientes-digitales",
+  "title": "DELITOS EN AMBIENTES DIGITALES",
+  "description": "<p>Registros temporalizados de denuncias de delitos en ambientes digitales, para el análisis de patrones.&nbsp;&nbsp;&nbsp;&nbsp;</p>",
+  "licenses": [
+    {
+      "name": "OPEN DATA",
+      "title": "OPEN DATA",
+      "path": ""
+    }
+  ],
+  "sources": [
+    {
+      "title": "PROPIO",
+      "path": "https://portales.mp.gob.bo/datasets/"
+    }
+  ],
+  "resources": [
+    {
+      "path": "DELITOS_EN AMBIENTES DIGITALES_publico_1.json",
+      "name": "DELITOS_EN AMBIENTES DIGITALES_publico_1.json",
+      "format": "json",
+      "mediatype": "text/json",
+      "bytes": 34284,
+      "schema": {
+        "fields": [
+          {
+            "name": "delito",
+            "type": "string",
+            "description": "Delito principal"
+          },
+          {
+            "name": "denunciado_edad",
+            "type": "number",
+            "description": "Edad del denunciado"
+          },
+          {
+            "name": "denunciado_sexo",
+            "type": "string",
+            "description": "Sexo del denunciado"
+          },
+          {
+            "name": "denuncia_fecha_hora",
+            "type": "string",
+            "description": "Fecha y hora de la denuncia formal"
+          },
+          {
+            "name": "hash",
+            "type": "string",
+            "description": "Identificador unico del caso "
+          },
+          {
+            "name": "hecho_departamento",
+            "type": "string",
+            "description": "Departamento donde ocurrio el hecho"
+          },
+          {
+            "name": "hecho_dia",
+            "type": "number",
+            "description": "Nro dia de mes que se ocurrio el hecho"
+          },
+          {
+            "name": "hecho_direccion",
+            "type": "string",
+            "description": "Direccion donde ocurrio el hecho"
+          },
+          {
+            "name": "hecho_gestion",
+            "type": "number",
+            "description": "Año en que se ocurrio el hecho"
+          },
+          {
+            "name": "hecho_hora",
+            "type": "number",
+            "description": "Hora en que ocurrio el hecho"
+          },
+          {
+            "name": "hecho_mes",
+            "type": "number",
+            "description": "Mes en que se ocurrio el hecho"
+          },
+          {
+            "name": "hecho_municipio",
+            "type": "string",
+            "description": "Municipio donde ocurrio el hecho"
+          },
+          {
+            "name": "victima_edad",
+            "type": "number",
+            "description": "Edad de la victima de robo"
+          },
+          {
+            "name": "victima_sexo",
+            "type": "string",
+            "description": "Sexo de la victima de robo"
+          }
+        ]
+      }
+    },
+    {
+      "path": "DELITOS_EN AMBIENTES DIGITALES_publico_1.xml",
+      "name": "DELITOS_EN AMBIENTES DIGITALES_publico_1.xml",
+      "format": "xml",
+      "mediatype": "text/xml",
+      "bytes": 42589,
+      "schema": {
+        "fields": [
+          {
+            "name": "delito",
+            "type": "string",
+            "description": "Delito principal"
+          },
+          {
+            "name": "denunciado_edad",
+            "type": "number",
+            "description": "Edad del denunciado"
+          },
+          {
+            "name": "denunciado_sexo",
+            "type": "string",
+            "description": "Sexo del denunciado"
+          },
+          {
+            "name": "denuncia_fecha_hora",
+            "type": "string",
+            "description": "Fecha y hora de la denuncia formal"
+          },
+          {
+            "name": "hash",
+            "type": "string",
+            "description": "Identificador unico del caso "
+          },
+          {
+            "name": "hecho_departamento",
+            "type": "string",
+            "description": "Departamento donde ocurrio el hecho"
+          },
+          {
+            "name": "hecho_dia",
+            "type": "number",
+            "description": "Nro dia de mes que se ocurrio el hecho"
+          },
+          {
+            "name": "hecho_direccion",
+            "type": "string",
+            "description": "Direccion donde ocurrio el hecho"
+          },
+          {
+            "name": "hecho_gestion",
+            "type": "number",
+            "description": "Año en que se ocurrio el hecho"
+          },
+          {
+            "name": "hecho_hora",
+            "type": "number",
+            "description": "Hora en que ocurrio el hecho"
+          },
+          {
+            "name": "hecho_mes",
+            "type": "number",
+            "description": "Mes en que se ocurrio el hecho"
+          },
+          {
+            "name": "hecho_municipio",
+            "type": "string",
+            "description": "Municipio donde ocurrio el hecho"
+          },
+          {
+            "name": "victima_edad",
+            "type": "number",
+            "description": "Edad de la victima de robo"
+          },
+          {
+            "name": "victima_sexo",
+            "type": "string",
+            "description": "Sexo de la victima de robo"
+          }
+        ]
+      }
+    },
+    {
+      "path": "DELITOS_EN AMBIENTES DIGITALES_publico__1.csv",
+      "name": "DELITOS_EN AMBIENTES DIGITALES_publico__1.csv",
+      "format": "csv",
+      "mediatype": "text/csv",
+      "bytes": 14885,
+      "schema": {
+        "fields": [
+          {
+            "name": "delito",
+            "type": "string",
+            "description": "Delito principal"
+          },
+          {
+            "name": "denunciado_edad",
+            "type": "number",
+            "description": "Edad del denunciado"
+          },
+          {
+            "name": "denunciado_sexo",
+            "type": "string",
+            "description": "Sexo del denunciado"
+          },
+          {
+            "name": "denuncia_fecha_hora",
+            "type": "string",
+            "description": "Fecha y hora de la denuncia formal"
+          },
+          {
+            "name": "hash",
+            "type": "string",
+            "description": "Identificador unico del caso "
+          },
+          {
+            "name": "hecho_departamento",
+            "type": "string",
+            "description": "Departamento donde ocurrio el hecho"
+          },
+          {
+            "name": "hecho_dia",
+            "type": "number",
+            "description": "Nro dia de mes que se ocurrio el hecho"
+          },
+          {
+            "name": "hecho_direccion",
+            "type": "string",
+            "description": "Direccion donde ocurrio el hecho"
+          },
+          {
+            "name": "hecho_gestion",
+            "type": "number",
+            "description": "Año en que se ocurrio el hecho"
+          },
+          {
+            "name": "hecho_hora",
+            "type": "number",
+            "description": "Hora en que ocurrio el hecho"
+          },
+          {
+            "name": "hecho_mes",
+            "type": "number",
+            "description": "Mes en que se ocurrio el hecho"
+          },
+          {
+            "name": "hecho_municipio",
+            "type": "string",
+            "description": "Municipio donde ocurrio el hecho"
+          },
+          {
+            "name": "victima_edad",
+            "type": "number",
+            "description": "Edad de la victima de robo"
+          },
+          {
+            "name": "victima_sexo",
+            "type": "string",
+            "description": "Sexo de la victima de robo"
+          }
+        ]
+      }
+    }
+  ],
+  "keywords": [
+    "dataset",
+    "domestica",
+    "violencia"
+  ]
+}

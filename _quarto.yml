@@ -3,11 +3,13 @@ project:
 
 website:
   title: "Datos Fiscalia"
+  google-analytics: "G-P6YZKK0X3P"
   navbar:
     left:
       - href: index.qmd
         text: Inicio
-      - href: data/datasets/violencia-domestica-2025/index.qmd
+      - href: data/violencia-domestica-2025/index.qmd
+      - href: data/delitos-por-robo-2025/index.qmd
 
 format:
   html:

@@ -1,0 +1,574 @@
+---
+title: "Violencia Domestica"
+format:
+  dashboard:
+    orientation: rows
+    scrolling: true
+execute:
+  echo: false
+---
+
+```{ojs}
+//| output: false
+
+d3 = require("d3@7");
+Plot = require("@observablehq/plot");
+
+raw = await FileAttachment("VIOLENCIA_DOMESTICA 2025_publico__1.csv").csv({typed: false});
+
+toText = (v) => (v ?? "").toString().trim();
+
+toInt = (v) => {
+  const n = Number.parseInt(toText(v), 10);
+  return Number.isFinite(n) ? n : null;
+};
+
+parseDenunciaFecha = (value) => {
+  const text = toText(value);
+  if (!text) return null;
+  const [datePart, timePart = "00:00:00"] = text.split(" ");
+  const [dd, mm, yyyy] = datePart.split("-").map(Number);
+  const [hh = 0, min = 0, ss = 0] = timePart.split(":").map(Number);
+  if (![dd, mm, yyyy].every(Number.isFinite)) return null;
+  return new Date(yyyy, mm - 1, dd, hh, min, ss);
+};
+
+rows = raw.map((d) => ({
+  ...d,
+  hecho_gestion: toInt(d.hecho_gestion),
+  hecho_mes: toInt(d.hecho_mes),
+  hecho_dia: toInt(d.hecho_dia),
+  hecho_hora: toInt(d.hecho_hora),
+  hecho_departamento: toText(d.hecho_departamento),
+  hecho_municipio: toText(d.hecho_municipio),
+  denuncia_fecha_hora: toText(d.denuncia_fecha_hora),
+  fechaDenuncia: parseDenunciaFecha(d.denuncia_fecha_hora),
+  victima_sexo: toText(d.victima_sexo).toUpperCase(),
+  victima_edad: toInt(d.victima_edad),
+  victima_discapacidad: toText(d.victima_discapacidad),
+  victima_nivel_educacion: toText(d.victima_nivel_educacion),
+  agresor_sexo: toText(d.agresor_sexo).toUpperCase(),
+  agresor_edad: toInt(d.agresor_edad),
+  agresor_nivel_educacion: toText(d.agresor_nivel_educacion)
+}));
+
+departamentos = Array.from(new Set(rows.map((d) => d.hecho_departamento).filter(Boolean))).sort((a, b) => d3.ascending(a, b));
+
+sexoEtiqueta = (s) => (s === "F" || s === "M") ? s : "Sin dato";
+
+edadGrupo = (edad) => {
+  if (!Number.isInteger(edad)) return "Sin dato";
+  if (edad < 18) return "0-17";
+  if (edad < 30) return "18-29";
+  if (edad < 45) return "30-44";
+  if (edad < 60) return "45-59";
+  return "60+";
+};
+
+nombreMes = (m) => d3.timeFormat("%B")(new Date(2025, m - 1, 1));
+```
+
+## {.sidebar}
+
+```{ojs}
+viewof filtroDepartamento = Inputs.select(
+  ["Todos", ...departamentos],
+  {label: "Departamento", value: "Todos"}
+);
+
+viewof filtroMes = Inputs.select(
+  ["Todos", ...d3.range(1, 13)],
+  {
+    label: "Mes del hecho",
+    value: "Todos",
+    format: (m) => m === "Todos" ? m : nombreMes(m)
+  }
+);
+
+viewof filtroSexoVictima = Inputs.radio(
+  ["Todos", "F", "M", "Sin dato"],
+  {label: "Sexo victima", value: "Todos"}
+);
+
+viewof filtroSexoAgresor = Inputs.radio(
+  ["Todos", "M", "F", "Sin dato"],
+  {label: "Sexo atacante", value: "Todos"}
+);
+
+html`<div style="font-size:0.95rem;color:#495057;margin-top:0.5rem">
+<b>Registros filtrados:</b> ${filteredRows.length.toLocaleString("es-BO")}
+</div>`
+```
+
+```{ojs}
+//|output: false
+filteredRows = rows.filter((d) => {
+  const okDepto = filtroDepartamento === "Todos" || d.hecho_departamento === filtroDepartamento;
+  const okMes = filtroMes === "Todos" || d.hecho_mes === filtroMes;
+  const okSexoVictima = filtroSexoVictima === "Todos" || sexoEtiqueta(d.victima_sexo) === filtroSexoVictima;
+  const okSexoAgresor = filtroSexoAgresor === "Todos" || sexoEtiqueta(d.agresor_sexo) === filtroSexoAgresor;
+  return okDepto && okMes && okSexoVictima && okSexoAgresor;
+});
+```
+
+# Resumen General
+
+## Row {height=8%}
+
+```{ojs}
+//| title: Casos filtrados
+html`<div style="font-size:2.1rem;font-weight:700">${filteredRows.length.toLocaleString("es-BO")}</div>`
+```
+
+```{ojs}
+//| title: Edad promedio victima
+promEdadVictima = d3.mean(filteredRows, (d) => d.victima_edad);
+html`<div style="font-size:2.1rem;font-weight:700">${Number.isFinite(promEdadVictima) ? promEdadVictima.toFixed(1) : "N/D"}</div>`
+```
+
+```{ojs}
+//| title: Edad promedio atacante
+promEdadAgg = d3.mean(filteredRows, (d) => d.agresor_edad);
+html`<div style="font-size:2.1rem;font-weight:700">${Number.isFinite(promEdadAgg) ? promEdadAgg.toFixed(1) : "N/D"}</div>`
+```
+
+```{ojs}
+//| title: Registros con fecha valida
+conFechaValida = filteredRows.filter((d) => d.fechaDenuncia instanceof Date && !Number.isNaN(+d.fechaDenuncia)).length;
+porcFechaValida = filteredRows.length > 0 ? (conFechaValida / filteredRows.length) * 100 : NaN;
+html`<div style="font-size:2.1rem;font-weight:700">${Number.isFinite(porcFechaValida) ? `${porcFechaValida.toFixed(1)}%` : "N/D"}</div>`
+```
+
+## Row {height=11%}
+
+```{ojs}
+//| title: Casos por dia de denuncia
+casosPorDia = d3
+  .rollups(
+    filteredRows.filter((d) => d.fechaDenuncia),
+    (v) => v.length,
+    (d) => d3.timeDay(d.fechaDenuncia)
+  )
+  .map(([fecha, casos]) => ({fecha, casos}))
+  .sort((a, b) => d3.ascending(a.fecha, b.fecha));
+
+Plot.plot({
+  width: 840,
+  height: 320,
+  marginLeft: 56,
+  marginRight: 20,
+  x: {label: "Fecha"},
+  y: {label: "Casos"},
+  marks: [
+    Plot.line(casosPorDia, {x: "fecha", y: "casos", stroke: "#0b7285", curve: "natural"}),
+    Plot.dot(casosPorDia, {x: "fecha", y: "casos", fill: "#0b7285", r: 2.6}),
+    Plot.ruleY([0])
+  ]
+})
+```
+
+```{ojs}
+//| title: Casos por hora del hecho
+casosPorHora = d3
+  .rollups(
+    filteredRows.filter((d) => Number.isInteger(d.hecho_hora) && d.hecho_hora >= 0 && d.hecho_hora <= 23),
+    (v) => v.length,
+    (d) => d.hecho_hora
+  )
+  .map(([hora, casos]) => ({hora, casos}))
+  .sort((a, b) => d3.ascending(a.hora, b.hora));
+
+Plot.plot({
+  width: 840,
+  height: 320,
+  marginLeft: 56,
+  marginRight: 20,
+  x: {label: "Hora", tickFormat: (d) => `${String(d).padStart(2, "0")}:00`},
+  y: {label: "Casos"},
+  marks: [
+    Plot.barY(casosPorHora, {x: "hora", y: "casos", fill: "#1971c2"}),
+    Plot.ruleY([0])
+  ]
+})
+```
+
+# Victimas
+
+## Row {height=8%}
+
+```{ojs}
+//| title: Victimas mujeres
+vFem = filteredRows.filter((d) => sexoEtiqueta(d.victima_sexo) === "F").length;
+porcVFem = filteredRows.length > 0 ? (vFem / filteredRows.length) * 100 : NaN;
+html`<div style="font-size:2.1rem;font-weight:700">${Number.isFinite(porcVFem) ? `${porcVFem.toFixed(1)}%` : "N/D"}</div>`
+```
+
+```{ojs}
+//| title: Victimas con discapacidad reportada
+vDisc = filteredRows.filter((d) => d.victima_discapacidad).length;
+porcVDisc = filteredRows.length > 0 ? (vDisc / filteredRows.length) * 100 : NaN;
+html`<div style="font-size:2.1rem;font-weight:700">${Number.isFinite(porcVDisc) ? `${porcVDisc.toFixed(1)}%` : "N/D"}</div>`
+```
+
+```{ojs}
+//| title: Edad mediana victima
+medianaVictima = d3.median(filteredRows.map((d) => d.victima_edad).filter((v) => Number.isFinite(v)));
+html`<div style="font-size:2.1rem;font-weight:700">${Number.isFinite(medianaVictima) ? medianaVictima.toFixed(0) : "N/D"}</div>`
+```
+
+```{ojs}
+//| title: Sin dato en educacion victima
+sinEduVictima = filteredRows.filter((d) => !d.victima_nivel_educacion).length;
+porcSinEduVictima = filteredRows.length > 0 ? (sinEduVictima / filteredRows.length) * 100 : NaN;
+html`<div style="font-size:2.1rem;font-weight:700">${Number.isFinite(porcSinEduVictima) ? `${porcSinEduVictima.toFixed(1)}%` : "N/D"}</div>`
+```
+
+## Row {height=11%}
+
+```{ojs}
+//| title: Distribucion por sexo de victima
+sexoVict = d3.rollups(filteredRows, (v) => v.length, (d) => sexoEtiqueta(d.victima_sexo))
+  .map(([sexo, casos]) => ({sexo, casos}))
+  .sort((a, b) => d3.descending(a.casos, b.casos));
+
+Plot.plot({
+  width: 840,
+  height: 320,
+  marginLeft: 56,
+  marginRight: 20,
+  x: {label: null},
+  y: {label: "Casos"},
+  marks: [
+    Plot.barY(sexoVict, {x: "sexo", y: "casos", fill: "#e8590c"}),
+    Plot.text(sexoVict, {x: "sexo", y: "casos", text: "casos", dy: -8}),
+    Plot.ruleY([0])
+  ]
+})
+```
+
+```{ojs}
+//| title: Grupos de edad de victimas
+edadVict = d3.rollups(filteredRows, (v) => v.length, (d) => edadGrupo(d.victima_edad))
+  .map(([grupo, casos]) => ({grupo, casos}))
+  .sort((a, b) => d3.ascending(a.grupo, b.grupo));
+
+Plot.plot({
+  width: 840,
+  height: 320,
+  marginLeft: 56,
+  marginRight: 20,
+  x: {label: null},
+  y: {label: "Casos"},
+  marks: [
+    Plot.barY(edadVict, {x: "grupo", y: "casos", fill: "#1c7ed6"}),
+    Plot.ruleY([0])
+  ]
+})
+```
+
+## Row {height=11%}
+
+```{ojs}
+//| title: Nivel educativo de victimas
+eduVict = d3.rollups(filteredRows, (v) => v.length, (d) => d.victima_nivel_educacion || "Sin dato")
+  .map(([nivel, casos]) => ({nivel, casos}))
+  .sort((a, b) => d3.descending(a.casos, b.casos));
+
+Plot.plot({
+  width: 840,
+  height: 360,
+  marginLeft: 150,
+  marginRight: 20,
+  x: {label: "Casos"},
+  y: {label: null},
+  marks: [
+    Plot.barX(eduVict, {x: "casos", y: "nivel", sort: {y: "-x"}, fill: "#2f9e44"}),
+    Plot.text(eduVict, {x: "casos", y: "nivel", text: "casos", dx: 5, textAnchor: "start"}),
+    Plot.ruleX([0])
+  ]
+})
+```
+
+```{ojs}
+//| title: Discapacidad reportada en victimas
+tablaDiscap = d3.rollups(
+  filteredRows.filter((d) => d.victima_discapacidad),
+  (v) => v.length,
+  (d) => d.victima_discapacidad
+)
+  .map(([discapacidad, casos]) => ({discapacidad, casos}))
+  .sort((a, b) => d3.descending(a.casos, b.casos));
+
+Inputs.table(tablaDiscap, {
+  columns: ["discapacidad", "casos"],
+  sort: "casos",
+  reverse: true,
+  layout: "auto"
+})
+```
+
+# Atacantes
+
+## Row {height=8%}
+
+```{ojs}
+//| title: Atacantes hombres
+aMasc = filteredRows.filter((d) => sexoEtiqueta(d.agresor_sexo) === "M").length;
+porcAMasc = filteredRows.length > 0 ? (aMasc / filteredRows.length) * 100 : NaN;
+html`<div style="font-size:2.1rem;font-weight:700">${Number.isFinite(porcAMasc) ? `${porcAMasc.toFixed(1)}%` : "N/D"}</div>`
+```
+
+```{ojs}
+//| title: Edad mediana atacante
+medianaAgg = d3.median(filteredRows.map((d) => d.agresor_edad).filter((v) => Number.isFinite(v)));
+html`<div style="font-size:2.1rem;font-weight:700">${Number.isFinite(medianaAgg) ? medianaAgg.toFixed(0) : "N/D"}</div>`
+```
+
+```{ojs}
+//| title: Sin dato en sexo atacante
+sinSexoAgg = filteredRows.filter((d) => sexoEtiqueta(d.agresor_sexo) === "Sin dato").length;
+porcSinSexoAgg = filteredRows.length > 0 ? (sinSexoAgg / filteredRows.length) * 100 : NaN;
+html`<div style="font-size:2.1rem;font-weight:700">${Number.isFinite(porcSinSexoAgg) ? `${porcSinSexoAgg.toFixed(1)}%` : "N/D"}</div>`
+```
+
+```{ojs}
+//| title: Sin dato en educacion atacante
+sinEduAgg = filteredRows.filter((d) => !d.agresor_nivel_educacion).length;
+porcSinEduAgg = filteredRows.length > 0 ? (sinEduAgg / filteredRows.length) * 100 : NaN;
+html`<div style="font-size:2.1rem;font-weight:700">${Number.isFinite(porcSinEduAgg) ? `${porcSinEduAgg.toFixed(1)}%` : "N/D"}</div>`
+```
+
+## Row {height=11%}
+
+```{ojs}
+//| title: Distribucion por sexo de atacante
+sexoAgg = d3.rollups(filteredRows, (v) => v.length, (d) => sexoEtiqueta(d.agresor_sexo))
+  .map(([sexo, casos]) => ({sexo, casos}))
+  .sort((a, b) => d3.descending(a.casos, b.casos));
+
+Plot.plot({
+  width: 840,
+  height: 320,
+  marginLeft: 56,
+  marginRight: 20,
+  x: {label: null},
+  y: {label: "Casos"},
+  marks: [
+    Plot.barY(sexoAgg, {x: "sexo", y: "casos", fill: "#c92a2a"}),
+    Plot.text(sexoAgg, {x: "sexo", y: "casos", text: "casos", dy: -8}),
+    Plot.ruleY([0])
+  ]
+})
+```
+
+```{ojs}
+//| title: Grupos de edad de atacantes
+edadAgg = d3.rollups(filteredRows, (v) => v.length, (d) => edadGrupo(d.agresor_edad))
+  .map(([grupo, casos]) => ({grupo, casos}))
+  .sort((a, b) => d3.ascending(a.grupo, b.grupo));
+
+Plot.plot({
+  width: 840,
+  height: 320,
+  marginLeft: 56,
+  marginRight: 20,
+  x: {label: null},
+  y: {label: "Casos"},
+  marks: [
+    Plot.barY(edadAgg, {x: "grupo", y: "casos", fill: "#495057"}),
+    Plot.ruleY([0])
+  ]
+})
+```
+
+## Row {height=11%}
+
+```{ojs}
+//| title: Nivel educativo de atacantes
+eduAgg = d3.rollups(filteredRows, (v) => v.length, (d) => d.agresor_nivel_educacion || "Sin dato")
+  .map(([nivel, casos]) => ({nivel, casos}))
+  .sort((a, b) => d3.descending(a.casos, b.casos));
+
+Plot.plot({
+  width: 840,
+  height: 360,
+  marginLeft: 150,
+  marginRight: 20,
+  x: {label: "Casos"},
+  y: {label: null},
+  marks: [
+    Plot.barX(eduAgg, {x: "casos", y: "nivel", sort: {y: "-x"}, fill: "#5f3dc4"}),
+    Plot.text(eduAgg, {x: "casos", y: "nivel", text: "casos", dx: 5, textAnchor: "start"}),
+    Plot.ruleX([0])
+  ]
+})
+```
+
+```{ojs}
+//| title: Cruce sexo atacante vs sexo victima
+cruce = d3.rollups(
+  filteredRows,
+  (v) => v.length,
+  (d) => sexoEtiqueta(d.agresor_sexo),
+  (d) => sexoEtiqueta(d.victima_sexo)
+).flatMap(([sexo_agresor, vals]) =>
+  vals.map(([sexo_victima, casos]) => ({sexo_agresor, sexo_victima, casos}))
+);
+
+Plot.plot({
+  width: 840,
+  height: 360,
+  marginLeft: 100,
+  marginBottom: 70,
+  color: {scheme: "oranges", legend: true, label: "Casos"},
+  x: {label: "Sexo victima"},
+  y: {label: "Sexo atacante"},
+  marks: [
+    Plot.cell(cruce, {x: "sexo_victima", y: "sexo_agresor", fill: "casos"}),
+    Plot.text(cruce, {x: "sexo_victima", y: "sexo_agresor", text: "casos", fill: "#212529"})
+  ]
+})
+```
+
+# Ubicacion y Mapa
+
+## Row {height=4%}
+
+```{ojs}
+//| title: Departamentos con casos
+depCounts = d3.rollups(
+  filteredRows.filter((d) => d.hecho_departamento),
+  (v) => v.length,
+  (d) => d.hecho_departamento
+)
+  .map(([departamento, casos]) => ({departamento, casos}))
+  .sort((a, b) => d3.descending(a.casos, b.casos));
+
+html`<div style="font-size:2.1rem;font-weight:700">${depCounts.filter((d) => d.casos > 0).length}</div>`
+```
+
+```{ojs}
+//| title: Municipios con casos
+munCounts = d3.rollups(
+  filteredRows.filter((d) => d.hecho_municipio),
+  (v) => v.length,
+  (d) => d.hecho_municipio
+)
+  .map(([municipio, casos]) => ({municipio, casos}))
+  .sort((a, b) => d3.descending(a.casos, b.casos));
+
+html`<div style="font-size:2.1rem;font-weight:700">${munCounts.filter((d) => d.casos > 0).length}</div>`
+```
+
+```{ojs}
+//| title: Top departamento
+html`<div style="font-size:2.1rem;font-weight:700">${depCounts.length ? depCounts[0].departamento : "N/D"}</div>`
+```
+
+```{ojs}
+//| title: Top municipio
+html`<div style="font-size:2.1rem;font-weight:700">${munCounts.length ? munCounts[0].municipio : "N/D"}</div>`
+```
+
+## Row {height=11%}
+
+```{ojs}
+//| title: Casos por departamento
+Plot.plot({
+  width: 840,
+  height: 360,
+  marginLeft: 110,
+  marginRight: 20,
+  x: {label: "Casos"},
+  y: {label: null},
+  marks: [
+    Plot.barX(depCounts, {x: "casos", y: "departamento", sort: {y: "-x"}, fill: "#1971c2"}),
+    Plot.text(depCounts, {x: "casos", y: "departamento", text: "casos", dx: 5, textAnchor: "start"}),
+    Plot.ruleX([0])
+  ]
+})
+```
+
+```{ojs}
+//| title: Top 20 municipios
+Inputs.table(munCounts.slice(0, 20), {
+  columns: ["municipio", "casos"],
+  sort: "casos",
+  reverse: true,
+  layout: "auto"
+})
+```
+
+## Row {height=11%}
+
+```{ojs}
+//| output: false
+coordsDepto = [
+  {departamento: "PANDO", lat: -11.026, lon: -68.769},
+  {departamento: "BENI", lat: -14.834, lon: -64.900},
+  {departamento: "LA PAZ", lat: -16.495, lon: -68.133},
+  {departamento: "ORURO", lat: -17.964, lon: -67.106},
+  {departamento: "COCHABAMBA", lat: -17.389, lon: -66.156},
+  {departamento: "SANTA CRUZ", lat: -17.784, lon: -63.182},
+  {departamento: "CHUQUISACA", lat: -19.047, lon: -65.259},
+  {departamento: "POTOSI", lat: -19.583, lon: -65.753},
+  {departamento: "TARIJA", lat: -21.533, lon: -64.733}
+];
+
+mapData = coordsDepto.map((d) => {
+  const found = depCounts.find((x) => x.departamento === d.departamento);
+  return {...d, casos: found ? found.casos : 0};
+});
+```
+
+```{ojs}
+//| title: Mapa Leaflet por departamento
+(async () => {
+  if (!document.getElementById("leaflet-css")) {
+    const link = document.createElement("link");
+    link.id = "leaflet-css";
+    link.rel = "stylesheet";
+    link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+    link.integrity = "sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=";
+    link.crossOrigin = "";
+    document.head.appendChild(link);
+  }
+
+  const L = await require("leaflet@1.9.4");
+  const mapDiv = html`<div style="height:520px;width:100%;border:1px solid #dee2e6;border-radius:8px;"></div>`;
+
+  const map = L.map(mapDiv, {
+    center: [-16.7, -64.7],
+    zoom: 5,
+    scrollWheelZoom: true
+  });
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "&copy; OpenStreetMap contributors"
+  }).addTo(map);
+
+  const maxCasos = Math.max(1, ...mapData.map((d) => d.casos));
+  const radioEscala = (casos) => 6 + (Math.sqrt(casos) / Math.sqrt(maxCasos)) * 20;
+  const colorEscala = (casos) => {
+    if (casos >= maxCasos * 0.75) return "#0b7285";
+    if (casos >= maxCasos * 0.5) return "#1971c2";
+    if (casos >= maxCasos * 0.25) return "#4dabf7";
+    return "#74c0fc";
+  };
+
+  mapData.forEach((d) => {
+    L.circleMarker([d.lat, d.lon], {
+      radius: radioEscala(d.casos),
+      color: "#1b1f24",
+      weight: 1,
+      fillColor: colorEscala(d.casos),
+      fillOpacity: 0.75
+    })
+      .addTo(map)
+      .bindPopup(`<b>${d.departamento}</b><br/>Casos: ${d.casos}`);
+  });
+
+  invalidation.then(() => map.remove());
+  return mapDiv;
+})()
+```

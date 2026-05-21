@@ -1,0 +1,15 @@
+{
+  "profile": "tabular-data-package",
+  "name": "perdida-dominio-bienes",
+  "title": "Pérdida de Dominio de Bienes",
+  "description": "Dataset extraído del endpoint https://justicialibre-gw.mp.gob.bo/v1/portal-web/perdida-dominio-bienes",
+  "resources": [
+    {
+      "path": "perdida-dominio-bienes.json",
+      "name": "perdida-dominio-bienes",
+      "profile": "tabular-data-resource",
+      "format": "json",
+      "mediatype": "application/json"
+    }
+  ]
+}

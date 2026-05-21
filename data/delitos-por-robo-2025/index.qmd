@@ -1,0 +1,627 @@
+---
+title: "Delitos por Robo"
+format:
+  dashboard:
+    orientation: rows
+    scrolling: true
+execute:
+  echo: false
+---
+
+```{ojs}
+//| output: false
+
+d3 = require("d3@7");
+Plot = require("@observablehq/plot");
+
+raw = await FileAttachment("DELITOS_POR ROBO 2025_publico__1.csv").csv({typed: false});
+
+toText = (v) => (v ?? "").toString().trim();
+
+toInt = (v) => {
+  const n = Number.parseInt(toText(v), 10);
+  return Number.isFinite(n) ? n : null;
+};
+
+parseDenunciaFecha = (value) => {
+  const text = toText(value);
+  if (!text) return null;
+  const [datePart, timePart = "00:00:00"] = text.split(" ");
+  const [dd, mm, yyyy] = datePart.split("-").map(Number);
+  const [hh = 0, min = 0, ss = 0] = timePart.split(":").map(Number);
+  if (![dd, mm, yyyy].every(Number.isFinite)) return null;
+  return new Date(yyyy, mm - 1, dd, hh, min, ss);
+};
+
+rows = raw.map((d) => ({
+  ...d,
+  hash: toText(d.hash),
+  delito: toText(d.delito),
+  robo_modalidad: toText(d.robo_modalidad),
+  bien_sustraido: toText(d.bien_sustraido),
+  hecho_gestion: toInt(d.hecho_gestion),
+  hecho_mes: toInt(d.hecho_mes),
+  hecho_dia: toInt(d.hecho_dia),
+  hecho_hora: toInt(d.hecho_hora),
+  hecho_departamento: toText(d.hecho_departamento),
+  hecho_municipio: toText(d.hecho_municipio),
+  hecho_direccion: toText(d.hecho_direccion),
+  hecho_latitud: Number.parseFloat(toText(d.hecho_latitud)) || null,
+  hecho_longitud: Number.parseFloat(toText(d.hecho_longitud)) || null,
+  denuncia_fecha_hora: toText(d.denuncia_fecha_hora),
+  fechaDenuncia: parseDenunciaFecha(d.denuncia_fecha_hora),
+  victima_sexo: toText(d.victima_sexo).toUpperCase(),
+  victima_edad: toInt(d.victima_edad),
+  denunciado_sexo: toText(d.denunciado_sexo).toUpperCase(),
+  denunciado_edad: toInt(d.denunciado_edad)
+}));
+
+departamentos = Array.from(new Set(rows.map((d) => d.hecho_departamento).filter(Boolean))).sort((a, b) => d3.ascending(a, b));
+
+sexoEtiqueta = (s) => (s === "F" || s === "M") ? s : "Sin dato";
+
+edadGrupo = (edad) => {
+  if (!Number.isInteger(edad)) return "Sin dato";
+  if (edad < 18) return "0-17";
+  if (edad < 30) return "18-29";
+  if (edad < 45) return "30-44";
+  if (edad < 60) return "45-59";
+  return "60+";
+};
+
+nombreMes = (m) => d3.timeFormat("%B")(new Date(2025, m - 1, 1));
+```
+
+## {.sidebar}
+
+```{ojs}
+viewof filtroDepartamento = Inputs.select(
+  ["Todos", ...departamentos],
+  {label: "Departamento", value: "Todos"}
+);
+
+viewof filtroMes = Inputs.select(
+  ["Todos", ...d3.range(1, 13)],
+  {
+    label: "Mes del hecho",
+    value: "Todos",
+    format: (m) => m === "Todos" ? m : nombreMes(m)
+  }
+);
+
+viewof filtroSexoVictima = Inputs.radio(
+  ["Todos", "F", "M", "Sin dato"],
+  {label: "Sexo victima", value: "Todos"}
+);
+
+viewof filtroSexoDenunciado = Inputs.radio(
+  ["Todos", "M", "F", "Sin dato"],
+  {label: "Sexo denunciado", value: "Todos"}
+);
+
+html`<div style="font-size:0.95rem;color:#495057;margin-top:0.5rem">
+<b>Registros filtrados:</b> ${filteredRows.length.toLocaleString("es-BO")}
+</div>`
+```
+
+```{ojs}
+//|output: false
+filteredRows = rows.filter((d) => {
+  const okDepto = filtroDepartamento === "Todos" || d.hecho_departamento === filtroDepartamento;
+  const okMes = filtroMes === "Todos" || d.hecho_mes === filtroMes;
+  const okSexoVictima = filtroSexoVictima === "Todos" || sexoEtiqueta(d.victima_sexo) === filtroSexoVictima;
+  const okSexoDenunciado = filtroSexoDenunciado === "Todos" || sexoEtiqueta(d.denunciado_sexo) === filtroSexoDenunciado;
+  return okDepto && okMes && okSexoVictima && okSexoDenunciado;
+});
+```
+
+# Resumen General
+
+## Row {height=8%}
+
+```{ojs}
+//| title: Casos filtrados
+html`<div style="font-size:2.1rem;font-weight:700">${filteredRows.length.toLocaleString("es-BO")}</div>`
+```
+
+```{ojs}
+//| title: Edad promedio victima
+promEdadVictima = d3.mean(filteredRows, (d) => d.victima_edad);
+html`<div style="font-size:2.1rem;font-weight:700">${Number.isFinite(promEdadVictima) ? promEdadVictima.toFixed(1) : "N/D"}</div>`
+```
+
+```{ojs}
+//| title: Edad promedio denunciado
+promEdadDen = d3.mean(filteredRows, (d) => d.denunciado_edad);
+html`<div style="font-size:2.1rem;font-weight:700">${Number.isFinite(promEdadDen) ? promEdadDen.toFixed(1) : "N/D"}</div>`
+```
+
+```{ojs}
+//| title: Registros con fecha valida
+conFechaValida = filteredRows.filter((d) => d.fechaDenuncia instanceof Date && !Number.isNaN(+d.fechaDenuncia)).length;
+porcFechaValida = filteredRows.length > 0 ? (conFechaValida / filteredRows.length) * 100 : NaN;
+html`<div style="font-size:2.1rem;font-weight:700">${Number.isFinite(porcFechaValida) ? `${porcFechaValida.toFixed(1)}%` : "N/D"}</div>`
+```
+
+## Row {height=11%}
+
+```{ojs}
+//| title: Casos por dia de denuncia
+casosPorDia = d3
+  .rollups(
+    filteredRows.filter((d) => d.fechaDenuncia),
+    (v) => v.length,
+    (d) => d3.timeDay(d.fechaDenuncia)
+  )
+  .map(([fecha, casos]) => ({fecha, casos}))
+  .sort((a, b) => d3.ascending(a.fecha, b.fecha));
+
+Plot.plot({
+  width: 840,
+  height: 320,
+  marginLeft: 56,
+  marginRight: 20,
+  x: {label: "Fecha"},
+  y: {label: "Casos"},
+  marks: [
+    Plot.line(casosPorDia, {x: "fecha", y: "casos", stroke: "#0b7285", curve: "natural"}),
+    Plot.dot(casosPorDia, {x: "fecha", y: "casos", fill: "#0b7285", r: 2.6}),
+    Plot.ruleY([0])
+  ]
+})
+```
+
+```{ojs}
+//| title: Casos por hora del hecho
+casosPorHora = d3
+  .rollups(
+    filteredRows.filter((d) => Number.isInteger(d.hecho_hora) && d.hecho_hora >= 0 && d.hecho_hora <= 23),
+    (v) => v.length,
+    (d) => d.hecho_hora
+  )
+  .map(([hora, casos]) => ({hora, casos}))
+  .sort((a, b) => d3.ascending(a.hora, b.hora));
+
+Plot.plot({
+  width: 840,
+  height: 320,
+  marginLeft: 56,
+  marginRight: 20,
+  x: {label: "Hora", tickFormat: (d) => `${String(d).padStart(2, "0")}:00`},
+  y: {label: "Casos"},
+  marks: [
+    Plot.barY(casosPorHora, {x: "hora", y: "casos", fill: "#1971c2"}),
+    Plot.ruleY([0])
+  ]
+})
+```
+
+# Víctimas
+
+## Row {height=8%}
+
+```{ojs}
+//| title: Victimas mujeres
+vFem = filteredRows.filter((d) => sexoEtiqueta(d.victima_sexo) === "F").length;
+porcVFem = filteredRows.length > 0 ? (vFem / filteredRows.length) * 100 : NaN;
+html`<div style="font-size:2.1rem;font-weight:700">${Number.isFinite(porcVFem) ? `${porcVFem.toFixed(1)}%` : "N/D"}</div>`
+```
+
+```{ojs}
+//| title: Edad mediana victima
+medianaVictima = d3.median(filteredRows.map((d) => d.victima_edad).filter((v) => Number.isFinite(v)));
+html`<div style="font-size:2.1rem;font-weight:700">${Number.isFinite(medianaVictima) ? medianaVictima.toFixed(0) : "N/D"}</div>`
+```
+
+```{ojs}
+//| title: Edad promedio victima
+promVictima = d3.mean(filteredRows, (d) => d.victima_edad);
+html`<div style="font-size:2.1rem;font-weight:700">${Number.isFinite(promVictima) ? promVictima.toFixed(1) : "N/D"}</div>`
+```
+
+```{ojs}
+//| title: Registros con edad de victima
+conEdadVictima = filteredRows.filter((d) => Number.isFinite(d.victima_edad)).length;
+porcConEdad = filteredRows.length > 0 ? (conEdadVictima / filteredRows.length) * 100 : NaN;
+html`<div style="font-size:2.1rem;font-weight:700">${Number.isFinite(porcConEdad) ? `${porcConEdad.toFixed(1)}%` : "N/D"}</div>`
+```
+
+## Row {height=11%}
+
+```{ojs}
+//| title: Distribucion por sexo de victima
+sexoVict = d3.rollups(filteredRows, (v) => v.length, (d) => sexoEtiqueta(d.victima_sexo))
+  .map(([sexo, casos]) => ({sexo, casos}))
+  .sort((a, b) => d3.descending(a.casos, b.casos));
+
+Plot.plot({
+  width: 840,
+  height: 320,
+  marginLeft: 56,
+  marginRight: 20,
+  x: {label: null},
+  y: {label: "Casos"},
+  marks: [
+    Plot.barY(sexoVict, {x: "sexo", y: "casos", fill: "#e8590c"}),
+    Plot.text(sexoVict, {x: "sexo", y: "casos", text: "casos", dy: -8}),
+    Plot.ruleY([0])
+  ]
+})
+```
+
+```{ojs}
+//| title: Grupos de edad de victimas
+edadVict = d3.rollups(filteredRows, (v) => v.length, (d) => edadGrupo(d.victima_edad))
+  .map(([grupo, casos]) => ({grupo, casos}))
+  .sort((a, b) => d3.ascending(a.grupo, b.grupo));
+
+Plot.plot({
+  width: 840,
+  height: 320,
+  marginLeft: 56,
+  marginRight: 20,
+  x: {label: null},
+  y: {label: "Casos"},
+  marks: [
+    Plot.barY(edadVict, {x: "grupo", y: "casos", fill: "#1c7ed6"}),
+    Plot.ruleY([0])
+  ]
+})
+```
+
+## Row {height=11%}
+
+```{ojs}
+//| title: Tipos de delito
+tiposDelito = d3.rollups(filteredRows, (v) => v.length, (d) => d.delito || "Sin dato")
+  .map(([tipo, casos]) => ({tipo, casos}))
+  .sort((a, b) => d3.descending(a.casos, b.casos));
+
+Plot.plot({
+  width: 840,
+  height: 360,
+  marginLeft: 150,
+  marginRight: 20,
+  x: {label: "Casos"},
+  y: {label: null},
+  marks: [
+    Plot.barX(tiposDelito, {x: "casos", y: "tipo", sort: {y: "-x"}, fill: "#2f9e44"}),
+    Plot.text(tiposDelito, {x: "casos", y: "tipo", text: "casos", dx: 5, textAnchor: "start"}),
+    Plot.ruleX([0])
+  ]
+})
+```
+
+```{ojs}
+//| title: Bien sustraído
+bienSustraido = d3.rollups(filteredRows, (v) => v.length, (d) => d.bien_sustraido || "Sin dato")
+  .map(([bien, casos]) => ({bien, casos}))
+  .sort((a, b) => d3.descending(a.casos, b.casos));
+
+Inputs.table(bienSustraido.slice(0, 10), {
+  columns: ["bien", "casos"],
+  sort: "casos",
+  reverse: true,
+  layout: "auto"
+})
+```
+
+# Denunciados
+
+## Row {height=8%}
+
+```{ojs}
+//| title: Denunciados hombres
+dMasc = filteredRows.filter((d) => sexoEtiqueta(d.denunciado_sexo) === "M").length;
+porcDMasc = filteredRows.length > 0 ? (dMasc / filteredRows.length) * 100 : NaN;
+html`<div style="font-size:2.1rem;font-weight:700">${Number.isFinite(porcDMasc) ? `${porcDMasc.toFixed(1)}%` : "N/D"}</div>`
+```
+
+```{ojs}
+//| title: Edad mediana denunciado
+medianaDen = d3.median(filteredRows.map((d) => d.denunciado_edad).filter((v) => Number.isFinite(v)));
+html`<div style="font-size:2.1rem;font-weight:700">${Number.isFinite(medianaDen) ? medianaDen.toFixed(0) : "N/D"}</div>`
+```
+
+```{ojs}
+//| title: Sin dato en sexo denunciado
+sinSexoDen = filteredRows.filter((d) => sexoEtiqueta(d.denunciado_sexo) === "Sin dato").length;
+porcSinSexoDen = filteredRows.length > 0 ? (sinSexoDen / filteredRows.length) * 100 : NaN;
+html`<div style="font-size:2.1rem;font-weight:700">${Number.isFinite(porcSinSexoDen) ? `${porcSinSexoDen.toFixed(1)}%` : "N/D"}</div>`
+```
+
+```{ojs}
+//| title: Registros con edad denunciado
+conEdadDen = filteredRows.filter((d) => Number.isFinite(d.denunciado_edad)).length;
+porcEdadDen = filteredRows.length > 0 ? (conEdadDen / filteredRows.length) * 100 : NaN;
+html`<div style="font-size:2.1rem;font-weight:700">${Number.isFinite(porcEdadDen) ? `${porcEdadDen.toFixed(1)}%` : "N/D"}</div>`
+```
+
+## Row {height=11%}
+
+```{ojs}
+//| title: Distribucion por sexo de denunciado
+sexoDen = d3.rollups(filteredRows, (v) => v.length, (d) => sexoEtiqueta(d.denunciado_sexo))
+  .map(([sexo, casos]) => ({sexo, casos}))
+  .sort((a, b) => d3.descending(a.casos, b.casos));
+
+Plot.plot({
+  width: 840,
+  height: 320,
+  marginLeft: 56,
+  marginRight: 20,
+  x: {label: null},
+  y: {label: "Casos"},
+  marks: [
+    Plot.barY(sexoDen, {x: "sexo", y: "casos", fill: "#c92a2a"}),
+    Plot.text(sexoDen, {x: "sexo", y: "casos", text: "casos", dy: -8}),
+    Plot.ruleY([0])
+  ]
+})
+```
+
+```{ojs}
+//| title: Grupos de edad de denunciados
+edadDen = d3.rollups(filteredRows, (v) => v.length, (d) => edadGrupo(d.denunciado_edad))
+  .map(([grupo, casos]) => ({grupo, casos}))
+  .sort((a, b) => d3.ascending(a.grupo, b.grupo));
+
+Plot.plot({
+  width: 840,
+  height: 320,
+  marginLeft: 56,
+  marginRight: 20,
+  x: {label: null},
+  y: {label: "Casos"},
+  marks: [
+    Plot.barY(edadDen, {x: "grupo", y: "casos", fill: "#495057"}),
+    Plot.ruleY([0])
+  ]
+})
+```
+
+## Row {height=11%}
+
+```{ojs}
+//| title: Cruce sexo denunciado vs sexo victima
+cruceSexos = d3.rollups(
+  filteredRows,
+  (v) => v.length,
+  (d) => sexoEtiqueta(d.denunciado_sexo),
+  (d) => sexoEtiqueta(d.victima_sexo)
+).flatMap(([sexo_denunciado, vals]) =>
+  vals.map(([sexo_victima, casos]) => ({sexo_denunciado, sexo_victima, casos}))
+);
+
+Plot.plot({
+  width: 840,
+  height: 360,
+  marginLeft: 100,
+  marginBottom: 70,
+  color: {scheme: "oranges", legend: true, label: "Casos"},
+  x: {label: "Sexo victima"},
+  y: {label: "Sexo denunciado"},
+  marks: [
+    Plot.cell(cruceSexos, {x: "sexo_victima", y: "sexo_denunciado", fill: "casos"}),
+    Plot.text(cruceSexos, {x: "sexo_victima", y: "sexo_denunciado", text: "casos", fill: "#212529"})
+  ]
+})
+```
+
+# Ubicacion y Mapa
+
+## Row {height=4%}
+
+```{ojs}
+//| title: Departamentos con casos
+depCounts = d3.rollups(
+  filteredRows.filter((d) => d.hecho_departamento),
+  (v) => v.length,
+  (d) => d.hecho_departamento
+)
+  .map(([departamento, casos]) => ({departamento, casos}))
+  .sort((a, b) => d3.descending(a.casos, b.casos));
+
+html`<div style="font-size:2.1rem;font-weight:700">${depCounts.filter((d) => d.casos > 0).length}</div>`
+```
+
+```{ojs}
+//| title: Municipios con casos
+munCounts = d3.rollups(
+  filteredRows.filter((d) => d.hecho_municipio),
+  (v) => v.length,
+  (d) => d.hecho_municipio
+)
+  .map(([municipio, casos]) => ({municipio, casos}))
+  .sort((a, b) => d3.descending(a.casos, b.casos));
+
+html`<div style="font-size:2.1rem;font-weight:700">${munCounts.filter((d) => d.casos > 0).length}</div>`
+```
+
+```{ojs}
+//| title: Top departamento
+html`<div style="font-size:2.1rem;font-weight:700">${depCounts.length ? depCounts[0].departamento : "N/D"}</div>`
+```
+
+```{ojs}
+//| title: Top municipio
+html`<div style="font-size:2.1rem;font-weight:700">${munCounts.length ? munCounts[0].municipio : "N/D"}</div>`
+```
+
+## Row {height=11%}
+
+```{ojs}
+//| title: Casos por departamento
+Plot.plot({
+  width: 840,
+  height: 360,
+  marginLeft: 110,
+  marginRight: 20,
+  x: {label: "Casos"},
+  y: {label: null},
+  marks: [
+    Plot.barX(depCounts, {x: "casos", y: "departamento", sort: {y: "-x"}, fill: "#1971c2"}),
+    Plot.text(depCounts, {x: "casos", y: "departamento", text: "casos", dx: 5, textAnchor: "start"}),
+    Plot.ruleX([0])
+  ]
+})
+```
+
+```{ojs}
+//| title: Top 20 municipios
+Inputs.table(munCounts.slice(0, 20), {
+  columns: ["municipio", "casos"],
+  sort: "casos",
+  reverse: true,
+  layout: "auto"
+})
+```
+
+## Row {height=11%}
+
+```{ojs}
+//| output: false
+// Preparar datos con coordenadas reales de los hechos
+pointsData = filteredRows
+  .filter((d) => Number.isFinite(d.hecho_latitud) && Number.isFinite(d.hecho_longitud))
+  .map((d) => ({
+    lat: d.hecho_latitud,
+    lon: d.hecho_longitud,
+    departamento: d.hecho_departamento,
+    municipio: d.hecho_municipio,
+    fecha: d.fechaDenuncia,
+    delito: d.delito,
+    victima_sexo: d.victima_sexo,
+    victima_edad: d.victima_edad
+  }));
+
+// Calcular centro del mapa basado en datos filtrados
+mapCenter = pointsData.length > 0 
+  ? [
+      d3.mean(pointsData, (d) => d.lat),
+      d3.mean(pointsData, (d) => d.lon)
+    ]
+  : [-16.7, -64.7];
+```
+
+```{ojs}
+//| title: Mapa Leaflet por coordenadas del hecho
+(async () => {
+  if (!document.getElementById("leaflet-css")) {
+    const link = document.createElement("link");
+    link.id = "leaflet-css";
+    link.rel = "stylesheet";
+    link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+    link.integrity = "sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=";
+    link.crossOrigin = "";
+    document.head.appendChild(link);
+  }
+
+  const mapDiv = html`<div style="height:520px;width:100%;border:1px solid #dee2e6;border-radius:8px;position:relative;"></div>`;
+  
+  // Añadir spinner de carga
+  const spinner = document.createElement("div");
+  spinner.style.cssText = `
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    text-align: center;
+  `;
+  spinner.innerHTML = `
+    <div style="
+      border: 4px solid #f0f0f0;
+      border-top: 4px solid #0b7285;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 15px;
+    "></div>
+    <div style="font-size: 14px;color: #666;font-weight: 500;">Cargando mapa...</div>
+    <style>
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+  `;
+  mapDiv.appendChild(spinner);
+
+  const L = await require("leaflet@1.9.4");
+
+  const map = L.map(mapDiv, {
+    center: mapCenter,
+    zoom: pointsData.length > 0 ? 7 : 5,
+    scrollWheelZoom: true
+  });
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "&copy; OpenStreetMap contributors"
+  }).addTo(map);
+
+  // Ocultar spinner cuando la capa base está lista
+  map.on("layeradd", () => {
+    spinner.style.display = "none";
+  });
+
+  // Color basado en sexo de la víctima
+  const colorSexo = (sexo) => {
+    const s = sexoEtiqueta(sexo);
+    if (s === "M") return "#1971c2";
+    if (s === "F") return "#e8590c";
+    return "#999999";
+  };
+
+  // Crear marcador para cada punto
+  pointsData.forEach((d) => {
+    L.circleMarker([d.lat, d.lon], {
+      radius: 4,
+      color: "#1b1f24",
+      weight: 0.5,
+      fillColor: colorSexo(d.victima_sexo),
+      fillOpacity: 0.7
+    })
+      .addTo(map)
+      .bindPopup(`
+        <b>${d.municipio}, ${d.departamento}</b><br/>
+        Delito: ${d.delito}<br/>
+        Víctima: ${sexoEtiqueta(d.victima_sexo)}, ${d.victima_edad || "sin dato"} años<br/>
+        Fecha: ${d.fecha ? d3.timeFormat("%d-%m-%Y %H:%M")(d.fecha) : "sin dato"}
+      `);
+  });
+
+  // Añadir leyenda
+  const legend = L.control({position: "bottomright"});
+  legend.onAdd = function(map) {
+    const div = L.DomUtil.create("div", "info legend");
+    div.style.backgroundColor = "white";
+    div.style.padding = "10px";
+    div.style.borderRadius = "5px";
+    div.style.boxShadow = "0 0 15px rgba(0,0,0,0.2)";
+    div.style.fontSize = "13px";
+    
+    const items = [
+      {color: "#1971c2", label: "Víctima Masculina"},
+      {color: "#e8590c", label: "Víctima Femenina"},
+      {color: "#999999", label: "Sin dato"}
+    ];
+    
+    let html = "<div style='font-weight:bold;margin-bottom:8px'>Sexo de víctima:</div>";
+    items.forEach(item => {
+      html += `<div style='margin-bottom:6px;display:flex;align-items:center;'>
+        <span style='display:inline-block;width:12px;height:12px;background-color:${item.color};border:1px solid #1b1f24;border-radius:50%;margin-right:8px;'></span>
+        <span>${item.label}</span>
+      </div>`;
+    });
+    
+    div.innerHTML = html;
+    return div;
+  };
+  legend.addTo(map);
+
+  invalidation.then(() => map.remove());
+  return mapDiv;
+})()
+```

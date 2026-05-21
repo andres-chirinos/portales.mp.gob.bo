@@ -1,0 +1,13 @@
+---
+title: "Información de Datos Abiertos del Ministerio Público"
+---
+
+Los siguientes dashboards se realizarón gracias a la iniciativa de Datos Abiertos del Ministerio Público en el Ecosistema Roma para ver la fuente oficial ve al siguiente enlace [portales.mp.gob.bo](https://portales.mp.gob.bo) 
+
+## Dashboards
+
+- [Violencia Domestica](/data/violencia-domestica-2025/)
+
+- [Delitos de Robo](/data/delitos-por-robo-2025/)
+
+

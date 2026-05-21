@@ -1,0 +1,129 @@
+{
+  "name": "personas-en-rebeldia",
+  "title": "PERSONAS EN REBELDIA",
+  "description": "<p>Registros temporalizados de PERSONAS EN REBELDIA para el análisis de patrones de criminalidad.</p>",
+  "licenses": [
+    {
+      "name": "open data",
+      "title": "open data",
+      "path": ""
+    }
+  ],
+  "sources": [
+    {
+      "title": "propia",
+      "path": "https://portales.mp.gob.bo/datasets/"
+    }
+  ],
+  "resources": [
+    {
+      "path": "PERSONAS_EN REBELDIA_publico_1.json",
+      "name": "PERSONAS_EN REBELDIA_publico_1.json",
+      "format": "json",
+      "mediatype": "text/json",
+      "bytes": 5336889,
+      "schema": {
+        "fields": [
+          {
+            "name": "caso_cud",
+            "type": "string",
+            "description": "Caso aperturado protegido ****234"
+          },
+          {
+            "name": "fecha_inicio",
+            "type": "string",
+            "description": "Fecha cuando se puso en rebeldia"
+          },
+          {
+            "name": "nombre_completo",
+            "type": "string",
+            "description": "Nombre persona rebelde"
+          },
+          {
+            "name": "persona_ci",
+            "type": "string",
+            "description": "Documento de identidad protegido. ****123"
+          },
+          {
+            "name": "persona_edad",
+            "type": "number",
+            "description": "Edad del sujeto en fecha denuncia"
+          }
+        ]
+      }
+    },
+    {
+      "path": "PERSONAS_EN REBELDIA_publico__1.csv",
+      "name": "PERSONAS_EN REBELDIA_publico__1.csv",
+      "format": "csv",
+      "mediatype": "text/csv",
+      "bytes": 2113478,
+      "schema": {
+        "fields": [
+          {
+            "name": "caso_cud",
+            "type": "string",
+            "description": "Caso aperturado protegido ****234"
+          },
+          {
+            "name": "fecha_inicio",
+            "type": "string",
+            "description": "Fecha cuando se puso en rebeldia"
+          },
+          {
+            "name": "nombre_completo",
+            "type": "string",
+            "description": "Nombre persona rebelde"
+          },
+          {
+            "name": "persona_ci",
+            "type": "string",
+            "description": "Documento de identidad protegido. ****123"
+          },
+          {
+            "name": "persona_edad",
+            "type": "number",
+            "description": "Edad del sujeto en fecha denuncia"
+          }
+        ]
+      }
+    },
+    {
+      "path": "PERSONAS_EN REBELDIA_publico_1.xml",
+      "name": "PERSONAS_EN REBELDIA_publico_1.xml",
+      "format": "xml",
+      "mediatype": "text/xml",
+      "bytes": 7122839,
+      "schema": {
+        "fields": [
+          {
+            "name": "caso_cud",
+            "type": "string",
+            "description": "Caso aperturado protegido ****234"
+          },
+          {
+            "name": "fecha_inicio",
+            "type": "string",
+            "description": "Fecha cuando se puso en rebeldia"
+          },
+          {
+            "name": "nombre_completo",
+            "type": "string",
+            "description": "Nombre persona rebelde"
+          },
+          {
+            "name": "persona_ci",
+            "type": "string",
+            "description": "Documento de identidad protegido. ****123"
+          },
+          {
+            "name": "persona_edad",
+            "type": "number",
+            "description": "Edad del sujeto en fecha denuncia"
+          }
+        ]
+      }
+    }
+  ],
+  "keywords": []
+}

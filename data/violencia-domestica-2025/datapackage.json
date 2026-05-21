@@ -1,0 +1,326 @@
+{
+  "name": "violencia-domestica-2025",
+  "title": "VIOLENCIA DOMESTICA 2025",
+  "description": "<p>Registros temporalizados de VIOLENCIA DOMESTICA para el análisis de patrones de criminalidad.</p>",
+  "licenses": [
+    {
+      "name": "OPEN DATA",
+      "title": "OPEN DATA",
+      "path": ""
+    }
+  ],
+  "sources": [
+    {
+      "title": "PROPIA",
+      "path": "https://portales.mp.gob.bo/datasets/"
+    }
+  ],
+  "resources": [
+    {
+      "path": "VIOLENCIA_DOMESTICA 2025_publico_1.xml",
+      "name": "VIOLENCIA_DOMESTICA 2025_publico_1.xml",
+      "format": "xml",
+      "mediatype": "text/xml",
+      "bytes": 25060950,
+      "schema": {
+        "fields": [
+          {
+            "name": "agresor_edad",
+            "type": "number",
+            "description": "Edad del agresor"
+          },
+          {
+            "name": "agresor_nivel_educacion",
+            "type": "string",
+            "description": "Nivel de educación del agresor"
+          },
+          {
+            "name": "agresor_sexo",
+            "type": "string",
+            "description": "Sexo del agresor"
+          },
+          {
+            "name": "delito",
+            "type": "string",
+            "description": "Violencia Domestica"
+          },
+          {
+            "name": "denuncia_fecha_hora",
+            "type": "string",
+            "description": "Fecha y hora de la denuncia formal"
+          },
+          {
+            "name": "hash",
+            "type": "string",
+            "description": "Codigo"
+          },
+          {
+            "name": "hecho_departamento",
+            "type": "string",
+            "description": "Departamento donde ocurrio el hecho"
+          },
+          {
+            "name": "hecho_dia",
+            "type": "number",
+            "description": "Nro dia de mes que se ocurrio el hecho"
+          },
+          {
+            "name": "hecho_dia_semana",
+            "type": "number",
+            "description": "Nro dia de semana que se ocurrio el hecho"
+          },
+          {
+            "name": "hecho_gestion",
+            "type": "number",
+            "description": "Año en que se ocurrio el hecho"
+          },
+          {
+            "name": "hecho_hora",
+            "type": "number",
+            "description": "Hora en que ocurrio el hecho"
+          },
+          {
+            "name": "hecho_mes",
+            "type": "number",
+            "description": "Mes en que se ocurrio el hecho"
+          },
+          {
+            "name": "hecho_municipio",
+            "type": "string",
+            "description": "Municipio donde ocurrio el hecho"
+          },
+          {
+            "name": "relato_victima",
+            "type": "string",
+            "description": "Relato de la victima en la denuncia"
+          },
+          {
+            "name": "victima_discapacidad",
+            "type": "string",
+            "description": "Grado de discapacidad de la victima"
+          },
+          {
+            "name": "victima_edad",
+            "type": "number",
+            "description": "Edad de la victima"
+          },
+          {
+            "name": "victima_nivel_educacion",
+            "type": "string",
+            "description": "Nivel de educación de la victima"
+          },
+          {
+            "name": "victima_sexo",
+            "type": "string",
+            "description": "Sexo de la victima"
+          }
+        ]
+      }
+    },
+    {
+      "path": "VIOLENCIA_DOMESTICA 2025_publico_1.json",
+      "name": "VIOLENCIA_DOMESTICA 2025_publico_1.json",
+      "format": "json",
+      "mediatype": "text/json",
+      "bytes": 20303810,
+      "schema": {
+        "fields": [
+          {
+            "name": "agresor_edad",
+            "type": "number",
+            "description": "Edad del agresor"
+          },
+          {
+            "name": "agresor_nivel_educacion",
+            "type": "string",
+            "description": "Nivel de educación del agresor"
+          },
+          {
+            "name": "agresor_sexo",
+            "type": "string",
+            "description": "Sexo del agresor"
+          },
+          {
+            "name": "delito",
+            "type": "string",
+            "description": "Violencia Domestica"
+          },
+          {
+            "name": "denuncia_fecha_hora",
+            "type": "string",
+            "description": "Fecha y hora de la denuncia formal"
+          },
+          {
+            "name": "hash",
+            "type": "string",
+            "description": "Codigo"
+          },
+          {
+            "name": "hecho_departamento",
+            "type": "string",
+            "description": "Departamento donde ocurrio el hecho"
+          },
+          {
+            "name": "hecho_dia",
+            "type": "number",
+            "description": "Nro dia de mes que se ocurrio el hecho"
+          },
+          {
+            "name": "hecho_dia_semana",
+            "type": "number",
+            "description": "Nro dia de semana que se ocurrio el hecho"
+          },
+          {
+            "name": "hecho_gestion",
+            "type": "number",
+            "description": "Año en que se ocurrio el hecho"
+          },
+          {
+            "name": "hecho_hora",
+            "type": "number",
+            "description": "Hora en que ocurrio el hecho"
+          },
+          {
+            "name": "hecho_mes",
+            "type": "number",
+            "description": "Mes en que se ocurrio el hecho"
+          },
+          {
+            "name": "hecho_municipio",
+            "type": "string",
+            "description": "Municipio donde ocurrio el hecho"
+          },
+          {
+            "name": "relato_victima",
+            "type": "string",
+            "description": "Relato de la victima en la denuncia"
+          },
+          {
+            "name": "victima_discapacidad",
+            "type": "string",
+            "description": "Grado de discapacidad de la victima"
+          },
+          {
+            "name": "victima_edad",
+            "type": "number",
+            "description": "Edad de la victima"
+          },
+          {
+            "name": "victima_nivel_educacion",
+            "type": "string",
+            "description": "Nivel de educación de la victima"
+          },
+          {
+            "name": "victima_sexo",
+            "type": "string",
+            "description": "Sexo de la victima"
+          }
+        ]
+      }
+    },
+    {
+      "path": "VIOLENCIA_DOMESTICA 2025_publico__1.csv",
+      "name": "VIOLENCIA_DOMESTICA 2025_publico__1.csv",
+      "format": "csv",
+      "mediatype": "text/csv",
+      "bytes": 6020743,
+      "schema": {
+        "fields": [
+          {
+            "name": "agresor_edad",
+            "type": "number",
+            "description": "Edad del agresor"
+          },
+          {
+            "name": "agresor_nivel_educacion",
+            "type": "string",
+            "description": "Nivel de educación del agresor"
+          },
+          {
+            "name": "agresor_sexo",
+            "type": "string",
+            "description": "Sexo del agresor"
+          },
+          {
+            "name": "delito",
+            "type": "string",
+            "description": "Violencia Domestica"
+          },
+          {
+            "name": "denuncia_fecha_hora",
+            "type": "string",
+            "description": "Fecha y hora de la denuncia formal"
+          },
+          {
+            "name": "hash",
+            "type": "string",
+            "description": "Codigo"
+          },
+          {
+            "name": "hecho_departamento",
+            "type": "string",
+            "description": "Departamento donde ocurrio el hecho"
+          },
+          {
+            "name": "hecho_dia",
+            "type": "number",
+            "description": "Nro dia de mes que se ocurrio el hecho"
+          },
+          {
+            "name": "hecho_dia_semana",
+            "type": "number",
+            "description": "Nro dia de semana que se ocurrio el hecho"
+          },
+          {
+            "name": "hecho_gestion",
+            "type": "number",
+            "description": "Año en que se ocurrio el hecho"
+          },
+          {
+            "name": "hecho_hora",
+            "type": "number",
+            "description": "Hora en que ocurrio el hecho"
+          },
+          {
+            "name": "hecho_mes",
+            "type": "number",
+            "description": "Mes en que se ocurrio el hecho"
+          },
+          {
+            "name": "hecho_municipio",
+            "type": "string",
+            "description": "Municipio donde ocurrio el hecho"
+          },
+          {
+            "name": "relato_victima",
+            "type": "string",
+            "description": "Relato de la victima en la denuncia"
+          },
+          {
+            "name": "victima_discapacidad",
+            "type": "string",
+            "description": "Grado de discapacidad de la victima"
+          },
+          {
+            "name": "victima_edad",
+            "type": "number",
+            "description": "Edad de la victima"
+          },
+          {
+            "name": "victima_nivel_educacion",
+            "type": "string",
+            "description": "Nivel de educación de la victima"
+          },
+          {
+            "name": "victima_sexo",
+            "type": "string",
+            "description": "Sexo de la victima"
+          }
+        ]
+      }
+    }
+  ],
+  "keywords": [
+    "violencia"
+  ]
+}
